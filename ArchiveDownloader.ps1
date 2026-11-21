@@ -64,6 +64,7 @@ $settings = [pscustomobject]@{
     Remember    = $true
     User        = ''
     Sig         = ''
+    Links       = ''
 }
 if (Test-Path $SettingsFile) {
     try {
@@ -93,13 +94,19 @@ function New-Ctl($type, $x, $y, $w, $h, $text = '') {
     return $c
 }
 
-New-Ctl Label 12 14 400 20 'Links to download (one per line):' | Out-Null
-$btnLoad = New-Ctl Button 490 8 118 26 'Load from file...'
+New-Ctl Label 12 14 380 20 'Links to download (one per line):' | Out-Null
+$btnClear = New-Ctl Button 410 8 74 26 'Clear'
+$btnLoad  = New-Ctl Button 490 8 118 26 'Load from file...'
 
 $txtLinks = New-Ctl TextBox 12 36 596 120
 $txtLinks.Multiline  = $true
 $txtLinks.ScrollBars = 'Vertical'
 $txtLinks.WordWrap   = $false
+if ($settings.Links) { $txtLinks.Text = [string]$settings.Links }
+# Multiline WinForms text boxes don't support Ctrl+A on their own
+$txtLinks.Add_KeyDown({
+    if ($_.Control -and $_.KeyCode -eq 'A') { $txtLinks.SelectAll(); $_.SuppressKeyPress = $true }
+})
 
 New-Ctl Label 12 166 596 20 'Cookie: logged-in-user  (or paste the whole cookie string here)' | Out-Null
 $txtUser = New-Ctl TextBox 12 186 596 24
@@ -171,8 +178,14 @@ function Save-Settings {
         Remember    = $remember
         User        = $user
         Sig         = $sig
+        Links       = $txtLinks.Text
     } | ConvertTo-Json | Set-Content -Path $SettingsFile -Encoding UTF8
 }
+
+$btnClear.Add_Click({
+    $txtLinks.Clear()
+    [void]$txtLinks.Focus()
+})
 
 $btnLoad.Add_Click({
     $dlg = New-Object System.Windows.Forms.OpenFileDialog

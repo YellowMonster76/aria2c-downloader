@@ -48,6 +48,7 @@ Notes:
 ## Downloading
 
 1. **Links:** paste one link per line, or click **Load from file...** (see below).
+   The box keeps its contents between launches. Click **Clear** to empty it (Ctrl+A also selects everything in it).
    Use the direct file link, which looks like `https://archive.org/download/ITEM_ID/FILENAME`.
 2. **Cookie:** fill in the two boxes. You can leave them empty for public files.
 3. **Save to:** choose a folder with **Browse...**. It is created if it doesn't exist.
@@ -96,7 +97,7 @@ Settings live in `%APPDATA%\ArchiveDownloader`. Click **Open settings folder** i
 
 | File | Contents |
 | --- | --- |
-| `settings.json` | Save folder, connection count, the "Remember cookie" choice, and the cookie values. |
+| `settings.json` | Save folder, connection count, the contents of the links box, the "Remember cookie" choice, and the cookie values. |
 | `links.txt` | The links from the last download (aria2c reads this file). |
 
 **About the saved cookie:** if **Remember cookie** is ticked, the cookie values are stored **encrypted** with Windows' built-in data protection (DPAPI), tied to your Windows account on this PC. That's why they appear as long hex strings in `settings.json`. They can't be decrypted on another PC or by another Windows user, so you'll need to paste the cookie again on a new machine. If **Remember cookie** is unticked, no cookie is saved.
