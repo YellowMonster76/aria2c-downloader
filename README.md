@@ -47,14 +47,13 @@ Notes:
 
 ## Downloading
 
-1. **Links:** paste one link per line, or click **Load from file...** (see below).
-   The box keeps its contents between launches. Click **Clear** to empty it (Ctrl+A also selects everything in it).
+1. **Links:** add links to the list (see [The links list](#the-links-list) below).
    Use the direct file link, which looks like `https://archive.org/download/ITEM_ID/FILENAME`.
 2. **Cookie:** fill in the two boxes. You can leave them empty for public files.
 3. **Save to:** choose a folder with **Browse...**. It is created if it doesn't exist.
 4. **Connections per file:** 8 is a good default. Try 16 if the download is slow.
 5. **Files at once:** how many links download at the same time (default 5). The rest wait in a queue and start as earlier files finish. Set it to 1 to download one file after another, each at full speed. The total number of connections is roughly *files at once × connections per file*, so keep that sensible (archive.org may slow down or refuse very many connections).
-6. Click **Download**.
+6. Click **Download**. Links already marked **Done** are skipped.
 
 A separate window opens with the progress of each file:
 
@@ -73,9 +72,43 @@ When it finishes, the window says **All downloads finished** and waits for you t
 
 Each link is downloaded as its own file. You can close the main app window while downloads run, because the download window is independent.
 
+### The links list
+
+The list keeps its links between launches, so you can build up a queue and come back to it.
+
+**Adding links**
+
+- Type or paste a link into the box above the list and press **Enter** (or click **Add**).
+- Pasting several lines at once (into the box, or with **Ctrl+V** on the list) adds them all.
+- **Paste links** adds every link on the clipboard.
+- **Load from file...** adds links from a `.txt` file (see below).
+- Duplicate links are skipped.
+
+**The Status column**
+
+The app checks the save folder every few seconds and shows each link's status:
+
+| Status | Meaning |
+| --- | --- |
+| **Done** (green) | The file is in the save folder and finished. |
+| **Partial** (orange) | Downloading now, or stopped part-way (its `.aria2` file is there). Click **Download** to resume. |
+| *(blank)* | Not downloaded yet. |
+
+The status is worked out from the file name at the end of the link. If a site saves the file under a different name, the status stays blank. That doesn't stop it downloading.
+
+**Removing links**
+
+- **Remove finished** removes every link marked **Done**. This is the quick way to tidy up after a batch.
+- **Remove selected** removes the highlighted links. You can also press **Delete**, or right-click and choose **Remove**. Click a link to select it, and use Ctrl+click or Shift+click for several. Ctrl+A selects all.
+- **Clear all** empties the list after asking you to confirm.
+
+Removing a link from the list never deletes a downloaded file.
+
+Right-click a link for **Copy link** and **Open download folder** too.
+
 ### Load from file
 
-**Load from file...** reads links from a `.txt` file into the links box. It replaces what's already there. Use one link per line. Blank lines are ignored, and lines starting with `#` are skipped, which is handy for notes or for leaving a link out:
+**Load from file...** adds links from a `.txt` file to the list. Use one link per line. Blank lines are ignored, and lines starting with `#` are skipped, which is handy for notes or for leaving a link out:
 
 ```
 # Concert recordings
@@ -98,7 +131,7 @@ Settings live in `%APPDATA%\ArchiveDownloader`. Click **Open settings folder** i
 
 | File | Contents |
 | --- | --- |
-| `settings.json` | Save folder, connection count, files at once, the contents of the links box, the "Remember cookie" choice, and the cookie values. |
+| `settings.json` | Save folder, connection count, files at once, the links in the list, the "Remember cookie" choice, and the cookie values. |
 | `links.txt` | The links from the last download (aria2c reads this file). |
 
 **About the saved cookie:** if **Remember cookie** is ticked, the cookie values are stored **encrypted** with Windows' built-in data protection (DPAPI), tied to your Windows account on this PC. That's why they appear as long hex strings in `settings.json`. They can't be decrypted on another PC or by another Windows user, so you'll need to paste the cookie again on a new machine. If **Remember cookie** is unticked, no cookie is saved.
@@ -109,7 +142,7 @@ To reset everything, including the saved cookie, delete the `%APPDATA%\ArchiveDo
 
 When you click **Download**, the app:
 
-1. Writes your links to `links.txt` in the settings folder.
+1. Writes the links that aren't **Done** yet to `links.txt` in the settings folder.
 2. Opens a new PowerShell window that runs aria2c with:
    - `-i links.txt`: download each link as a separate file
    - `-d <folder>`: save to your chosen folder
