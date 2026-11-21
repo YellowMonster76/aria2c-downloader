@@ -182,6 +182,9 @@ function Save-Settings {
     } | ConvertTo-Json | Set-Content -Path $SettingsFile -Encoding UTF8
 }
 
+# Save the connection count as soon as it changes, not only on Download/close
+$numConn.Add_ValueChanged({ try { Save-Settings } catch { } })
+
 $btnClear.Add_Click({
     $txtLinks.Clear()
     [void]$txtLinks.Focus()
