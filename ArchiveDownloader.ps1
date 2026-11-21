@@ -65,6 +65,7 @@ $settings = [pscustomobject]@{
     User        = ''
     Sig         = ''
     Links       = ''
+    FilesAtOnce = 5
 }
 if (Test-Path $SettingsFile) {
     try {
@@ -135,6 +136,12 @@ $numConn.Minimum = 1
 $numConn.Maximum = 16
 $numConn.Value   = [Math]::Min(16, [Math]::Max(1, [int]$settings.Connections))
 
+New-Ctl Label 228 388 90 20 'Files at once:' | Out-Null
+$numFiles = New-Ctl NumericUpDown 318 385 60 24
+$numFiles.Minimum = 1
+$numFiles.Maximum = 10
+$numFiles.Value   = [Math]::Min(10, [Math]::Max(1, [int]$settings.FilesAtOnce))
+
 $lnkSettings = New-Ctl LinkLabel 428 388 180 20 'Open settings folder'
 $lnkSettings.TextAlign = 'TopRight'
 
@@ -175,6 +182,7 @@ function Save-Settings {
     [ordered]@{
         Dest        = $txtDest.Text.Trim()
         Connections = [int]$numConn.Value
+        FilesAtOnce = [int]$numFiles.Value
         Remember    = $remember
         User        = $user
         Sig         = $sig
@@ -182,8 +190,9 @@ function Save-Settings {
     } | ConvertTo-Json | Set-Content -Path $SettingsFile -Encoding UTF8
 }
 
-# Save the connection count as soon as it changes, not only on Download/close
+# Save the number settings as soon as they change, not only on Download/close
 $numConn.Add_ValueChanged({ try { Save-Settings } catch { } })
+$numFiles.Add_ValueChanged({ try { Save-Settings } catch { } })
 
 $btnClear.Add_Click({
     $txtLinks.Clear()
@@ -250,13 +259,14 @@ $btnDownload.Add_Click({
     [System.IO.File]::WriteAllLines($ListFile, [string[]]$links)   # UTF-8 without BOM
 
     $n = [int]$numConn.Value
+    $j = [int]$numFiles.Value
     # Script run in the new console window. The cookie is passed through an
     # environment variable so it never appears on a command line.
     $child = @"
 `$host.UI.RawUI.WindowTitle = 'Archive Downloader - $($links.Count) file(s)'
 `$h = @()
 if (`$env:AD_COOKIE) { `$h = @('--header', "Cookie: `$env:AD_COOKIE") }
-& $(Quote-PS $aria) -i $(Quote-PS $ListFile) -d $(Quote-PS $dest) -x $n -s $n -k 1M -c ``
+& $(Quote-PS $aria) -i $(Quote-PS $ListFile) -d $(Quote-PS $dest) -j $j -x $n -s $n -k 1M -c ``
     --file-allocation=none --max-tries=10 --retry-wait=5 --summary-interval=0 --console-log-level=warn @h
 Write-Host ''
 if (`$LASTEXITCODE -eq 0) {

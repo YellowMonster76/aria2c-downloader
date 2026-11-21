@@ -53,7 +53,8 @@ Notes:
 2. **Cookie:** fill in the two boxes. You can leave them empty for public files.
 3. **Save to:** choose a folder with **Browse...**. It is created if it doesn't exist.
 4. **Connections per file:** 8 is a good default. Try 16 if the download is slow.
-5. Click **Download**.
+5. **Files at once:** how many links download at the same time (default 5). The rest wait in a queue and start as earlier files finish. Set it to 1 to download one file after another, each at full speed. The total number of connections is roughly *files at once × connections per file*, so keep that sensible (archive.org may slow down or refuse very many connections).
+6. Click **Download**.
 
 A separate window opens with the progress of each file:
 
@@ -97,7 +98,7 @@ Settings live in `%APPDATA%\ArchiveDownloader`. Click **Open settings folder** i
 
 | File | Contents |
 | --- | --- |
-| `settings.json` | Save folder, connection count, the contents of the links box, the "Remember cookie" choice, and the cookie values. |
+| `settings.json` | Save folder, connection count, files at once, the contents of the links box, the "Remember cookie" choice, and the cookie values. |
 | `links.txt` | The links from the last download (aria2c reads this file). |
 
 **About the saved cookie:** if **Remember cookie** is ticked, the cookie values are stored **encrypted** with Windows' built-in data protection (DPAPI), tied to your Windows account on this PC. That's why they appear as long hex strings in `settings.json`. They can't be decrypted on another PC or by another Windows user, so you'll need to paste the cookie again on a new machine. If **Remember cookie** is unticked, no cookie is saved.
@@ -112,6 +113,7 @@ When you click **Download**, the app:
 2. Opens a new PowerShell window that runs aria2c with:
    - `-i links.txt`: download each link as a separate file
    - `-d <folder>`: save to your chosen folder
+   - `-j F`: download up to F files at the same time
    - `-x N -s N -k 1M`: use N connections per file, in pieces of at least 1 MB
    - `-c`: resume partial downloads
    - `--header "Cookie: ..."`: send your archive.org login
@@ -125,5 +127,6 @@ When you click **Download**, the app:
 | You get small HTML files instead of the real files | Your cookie has expired or is wrong. Log in to archive.org again and copy fresh values. |
 | "aria2c was not found" | Click **Install aria2**, or run `winget install aria2.aria2`. |
 | Slow speed | Raise **Connections per file** to 16, then click Download again (it resumes). If it's still slow, the limit is archive.org or your internet connection. |
+| Downloads fail or crawl when many files are queued | Too many connections at once. Lower **Files at once** or **Connections per file**. |
 | Download stopped with an error code | Click **Download** again to resume. |
 | A borrowable (lending library) book won't download | Those are protected with DRM and can't be downloaded this way. |
